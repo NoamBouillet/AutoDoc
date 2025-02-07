@@ -8,7 +8,7 @@ python3 and doxygen packages are going to be installed if you don't have them al
 ```sh
 curl -sLO https://raw.githubusercontent.com/NoamBouillet/AutoDoc/main/installing.sh && bash install.sh
 ```
-installing.sh - Installs the autodoc command by copying autodoc.py to an executable location.
+Installs the autodoc command by copying autodoc.py to an executable location.
 Then, you can safely run
 ```sh
 autodoc

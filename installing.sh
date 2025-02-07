@@ -1,12 +1,7 @@
 #!/bin/bash
-# install.sh - Installs the autodoc command and ensures required dependencies (python3 and doxygen) are installed.
 
 set -e 
 
-# -----------------------------------------------------------------------------
-# Function: check_dependencies
-# Checks if python3 and doxygen are installed. If not, it installs them.
-# -----------------------------------------------------------------------------
 check_dependencies() {
     missing=""
     
@@ -42,10 +37,6 @@ check_dependencies() {
 
 check_dependencies
 
-# -----------------------------------------------------------------------------
-# Determine an installation directory.
-# We attempt to use /usr/local/bin, and if not writable, we choose a user directory.
-# -----------------------------------------------------------------------------
 INSTALL_DIR="/usr/local/bin"
 
 if [ ! -w "$INSTALL_DIR" ]; then
@@ -64,20 +55,11 @@ if [ ! -w "$INSTALL_DIR" ]; then
 fi
 
 mkdir -p "$INSTALL_DIR"
-
-# -----------------------------------------------------------------------------
-# Copy autodoc.py to the chosen directory as "autodoc" (without the .py extension)
-# -----------------------------------------------------------------------------
-
 echo "Downloading autodoc.py..."
-curl -sLO https://raw.githubusercontent.com/NoamBouillet/AutoDoc/main/autodoc.py -o "$INSTALL_DIR/autodoc"
+curl -sLO https://raw.githubusercontent.com/NoamBouillet/AutoDoc/refs/heads/main/autodoc.py "$INSTALL_DIR/autodoc"
 chmod +x "$INSTALL_DIR/autodoc"
-
 echo "Installed autodoc to $INSTALL_DIR/autodoc"
 
-# -----------------------------------------------------------------------------
-# Check if the chosen directory is in the user's PATH.
-# -----------------------------------------------------------------------------
 if ! echo "$PATH" | grep -q "$INSTALL_DIR"; then
     echo "WARNING: $INSTALL_DIR is not in your PATH."
     echo "To add it, consider adding the following line to your shell configuration file (e.g. ~/.bashrc or ~/.profile):"
