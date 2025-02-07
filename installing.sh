@@ -39,24 +39,10 @@ check_dependencies
 
 INSTALL_DIR="/usr/local/bin"
 
-if [ ! -w "$INSTALL_DIR" ]; then
-    if [ -d "$HOME/.local/bin" ]; then
-        INSTALL_DIR="$HOME/.local/bin"
-    elif [ -d "$HOME/.local/share" ]; then
-        mkdir -p "$HOME/.local/share/bin"
-        INSTALL_DIR="$HOME/.local/share/bin"
-    elif [ -d "$HOME/.local/state" ]; then
-        mkdir -p "$HOME/.local/state/bin"
-        INSTALL_DIR="$HOME/.local/state/bin"
-    else
-        mkdir -p "$HOME/.local/bin"
-        INSTALL_DIR="$HOME/.local/bin"
-    fi
-fi
-
 mkdir -p "$INSTALL_DIR"
 echo "Downloading autodoc.py..."
-curl -sL https://raw.githubusercontent.com/NoamBouillet/AutoDoc/refs/heads/main/autodoc.py -o "/tmp/autodoc.py"
+curl -sL https://raw.githubusercontent.com/NoamBouillet/AutoDoc/main/autodoc.py -o "/tmp/autodoc.py"
+echo "Downloaded!"
 mv /tmp/autodoc.py "$INSTALL_DIR/autodoc"
 chmod +x "$INSTALL_DIR/autodoc"
 echo "Installed autodoc to $INSTALL_DIR/autodoc"
