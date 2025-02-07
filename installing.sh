@@ -68,7 +68,9 @@ mkdir -p "$INSTALL_DIR"
 # -----------------------------------------------------------------------------
 # Copy autodoc.py to the chosen directory as "autodoc" (without the .py extension)
 # -----------------------------------------------------------------------------
-cp autodoc.py "$INSTALL_DIR/autodoc"
+
+echo "Downloading autodoc.py..."
+curl -sLO https://raw.githubusercontent.com/NoamBouillet/AutoDoc/main/autodoc.py -o "$INSTALL_DIR/autodoc"
 chmod +x "$INSTALL_DIR/autodoc"
 
 echo "Installed autodoc to $INSTALL_DIR/autodoc"

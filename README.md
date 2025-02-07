@@ -2,15 +2,18 @@
 A documentation builder for C-Makefile based projects
 
 ## Requirements
-You need python3 and doxygen packages installed.
+python3 and doxygen packages are going to be installed if you don't have them already.
 
 ## Build
-> git clone https://github.com/NoamBouillet/AutoDoc && cd AutoDoc && ./installing
+```sh
+curl -sLO https://raw.githubusercontent.com/NoamBouillet/AutoDoc/main/installing.sh && bash install.sh
+```
 installing.sh - Installs the autodoc command by copying autodoc.py to an executable location.
-Then, you can safely run Autodoc
-
----
+Then, you can safely run
+```sh
+autodoc
+```
 
 ## Doxygen
-If you want to learn about the doxygen documentation, go on [here](https://www.doxygen.nl/manual/docblocks.html).
+If you want to learn about the doxygen documentation, go on [doxygen website](https://www.doxygen.nl/manual/docblocks.html).
 
