@@ -60,11 +60,4 @@ curl -sL https://raw.githubusercontent.com/NoamBouillet/AutoDoc/refs/heads/main/
 chmod +x "$INSTALL_DIR/autodoc"
 echo "Installed autodoc to $INSTALL_DIR/autodoc"
 
-
-if ! echo "$PATH" | grep -q "$INSTALL_DIR"; then
-    echo "WARNING: $INSTALL_DIR is not in your PATH."
-    echo "To add it, consider adding the following line to your shell configuration file (e.g. ~/.bashrc or ~/.profile):"
-    echo "export PATH=\"$INSTALL_DIR:\$PATH\""
-fi
-
 echo "Installation complete! You can now run 'autodoc' from anywhere."
