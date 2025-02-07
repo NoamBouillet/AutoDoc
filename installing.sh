@@ -56,7 +56,7 @@ fi
 
 mkdir -p "$INSTALL_DIR"
 echo "Downloading autodoc.py..."
-curl -sLO https://raw.githubusercontent.com/NoamBouillet/AutoDoc/refs/head/main/autodoc.py "$INSTALL_DIR/autodoc"
+curl -sLO https://raw.githubusercontent.com/NoamBouillet/AutoDoc/refs/heads/main/autodoc.py "$INSTALL_DIR/autodoc"
 chmod +x "$INSTALL_DIR/autodoc"
 echo "Installed autodoc to $INSTALL_DIR/autodoc"
 
