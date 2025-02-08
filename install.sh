@@ -26,8 +26,12 @@ check_dependencies()
 {
     missing=()
     
+    if ! command -v "pdflatex" >/dev/null ; then
+        echo -e "${RED}Missing pdflatex package. Please install it manually.${RESET}"
+        exit 1
+    fi
     for cmd in python3 doxygen; do
-        if ! command -v "$cmd" >/dev/null 2>&1; then
+        if ! command -v "$cmd" >/dev/null ; then
             missing+=("$cmd")
         fi
     done
@@ -39,9 +43,9 @@ check_dependencies()
 
     echo -e "${YELLOW}The following dependencies are missing:${RESET} ${missing[*]}"
     for pkg_mgr in "apt-get update && apt-get install -y" "dnf install -y" "pacman -Syu --noconfirm"; do
-        if command -v ${pkg_mgr%% *} >/dev/null 2>&1; then
+        if command -v ${pkg_mgr%% *} >/dev/null; then
             echo -e "${BLUE}➜ Attempting to install ${missing[*]} via ${pkg_mgr%% *}...${RESET}"
-            sudo bash -c "$pkg_mgr ${missing[*]}" >/dev/null 2>&1
+            sudo bash -c "$pkg_mgr ${missing[*]}" >/dev/null
             return
         fi
     done

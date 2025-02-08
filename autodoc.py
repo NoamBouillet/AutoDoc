@@ -7,58 +7,46 @@ import shutil
 import sys
 
 def add_doxygen_docs_to_function(function_name, params, return_type):
-    """Generates Doxygen documentation for the function."""
-    docs = f"/**\n"
-    docs += f" * @brief {function_name} function documentation\n"
-    
+    doxy_comment = f"/**\n"
+    doxy_comment += f" * @brief {function_name} function documentation\n"
     for param in params:
-        docs += f" * @param {param} Description of {param}\n"
-    docs += f" * @return Description of the return value (type: {return_type})\n"
-    docs += f" */\n"
-    return docs
+        doxy_comment += f" * @param {param} Description of {param}\n"
+    doxy_comment += f" * @return {return_type} Description of the return value\n"
+    doxy_comment += f" */\n"
+    return doxy_comment
 
 
-def remove_doxygen_docs_from_function(lines, func_line):
-    """Removes Doxygen documentation if present."""
-    doxy_pattern = re.compile(r"/\*\*")
-    start = None
-    for i in range(func_line, len(lines)):
-        line = lines[i].strip()
-        if doxy_pattern.match(line):
-            start = i
+def remove_doxygen_docs_from_function(content, func_line):
+    for i in range(func_line, -1, -1):
+        if content[i].strip().startswith("/*"):
+            del content[i]
+        elif content[i].strip().startswith("*/"):
             break
-    
-    if start is not None:
-        end = start
-        while end < len(lines) and not lines[end].strip().endswith("*/"):
-            end += 1
-        
-        if end < len(lines):
-            return lines[:start] + lines[end+1:]
-    
-    return lines
-
+    return content
 
 def is_doxygen_docs_present(lines, func_line):
-    """Checks if Doxygen documentation already exists for the function."""
-    doxy_pattern = re.compile(r"/\*\*")
-    function_name_pattern = re.compile(r"\b" + re.escape(lines[func_line].split()[1]) + r"\b")
+    line = lines[func_line].strip()
+    if not line:
+        return False
+    split_line = line.split()
+    if len(split_line) < 2:
+        return False
+    function_name = split_line[1]
+    function_name_pattern = re.compile(r"\b" + re.escape(function_name) + r"\b")
 
-    print("lalalala")
-    for line in lines[:func_line]:
-        if doxy_pattern.match(line.strip()):
-            if function_name_pattern.search(line.strip()):
-                return True
+    for i in range(func_line, -1, -1):
+        if lines[i].strip().startswith("/*"):
+            return True
+        elif lines[i].strip().startswith("*/"):
+            break
     return False
 
 
 def process_c_file(file_path, clean=False):
-    """Process a single C file, adding or removing Doxygen documentation for functions."""
     with open(file_path, 'r') as file:
         content = file.readlines()
-
     updated_content = []
-    function_pattern = re.compile(r"(\w+\s+\w+)\s*(\w+)\s*\(([^)]*)\)\s*\n\s*{")
+    function_pattern = re.compile(r"^\s*([a-zA-Z_][\w\s\*]+)\s+([a-zA-Z_]\w*)\s*\(([^)]*)\)\s*$")
 
     for i, line in enumerate(content):
         updated_content.append(line)
@@ -67,8 +55,7 @@ def process_c_file(file_path, clean=False):
             return_type = match.group(1)
             function_name = match.group(2)
             params_str = match.group(3)
-            params = [param.strip().split()[1] for param in params_str.split(',') if param.strip()]
-            
+            params = [p.strip().split()[-1] for p in params_str.split(',') if p.strip() and ' ' in p.strip()]            
             if clean:
                 updated_content = remove_doxygen_docs_from_function(updated_content, i)
             elif not is_doxygen_docs_present(updated_content, i):
@@ -78,7 +65,6 @@ def process_c_file(file_path, clean=False):
 
 
 def generate_doxygen_config():
-    """Generates the Doxygen configuration file."""
     config_content = """
 # Doxygen configuration file
 
@@ -87,21 +73,20 @@ OUTPUT_DIRECTORY       = ./doxygen_output
 FILE_PATTERNS          = *.c
 EXTRACT_ALL            = YES
 GENERATE_LATEX         = YES
-LATEX_OUTPUT           = pdf
+LATEX_OUTPUT           = latex
 GENERATE_HTML          = NO
     """
     
     with open("Doxyfile", 'w') as config_file:
         config_file.write(config_content)
 
-
 def run_doxygen():
     """Runs Doxygen to generate the documentation PDF."""
     subprocess.run(['doxygen', 'Doxyfile'])
-
+    with open('/dev/null', 'w') as devnull:
+        subprocess.run(['make', '-C', 'doxygen_output/latex'], stdout=devnull, stderr=devnull)
 
 def clean_up():
-    """Cleans up all generated files."""
     if os.path.exists("Doxyfile"):
         os.remove("Doxyfile")
         print("Removed Doxyfile")
@@ -110,9 +95,7 @@ def clean_up():
         shutil.rmtree("doxygen_output")
         print("Removed doxygen_output directory")
 
-
 def show_help():
-    """Displays the help guide."""
     help_text = """
 Usage:
   autodoc          - Process C files, add Doxygen documentation, and generate the PDF.
@@ -172,7 +155,6 @@ def main():
     generate_doxygen_config()
     run_doxygen()
     print("Doxygen PDF generated!")
-
 
 if __name__ == "__main__":
     main()
