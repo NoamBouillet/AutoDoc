@@ -6,7 +6,7 @@ python3 and doxygen packages are going to be installed if you don't have them al
 
 ## Install
 ```sh
-curl -sLO https://raw.githubusercontent.com/NoamBouillet/AutoDoc/main/installing.sh && bash installing.sh
+curl -sLO https://raw.githubusercontent.com/NoamBouillet/AutoDoc/main/install.sh && bash install.sh
 ```
 Then, you can safely run
 ```sh
