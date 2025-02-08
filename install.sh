@@ -30,7 +30,10 @@ check_dependencies()
         echo -e "${RED}Missing pdflatex package. Please install it manually.${RESET}"
         exit 1
     fi
-    for cmd in python3 doxygen graphviz; do
+    if ! command -v "dot" >/dev/null ; then
+        missing+=("graphviz")
+    fi
+    for cmd in python3 doxygen; do
         if ! command -v "$cmd" >/dev/null ; then
             missing+=("$cmd")
         fi
