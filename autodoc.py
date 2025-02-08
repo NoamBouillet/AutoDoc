@@ -10,8 +10,10 @@ def add_doxygen_docs_to_function(function_name, params, return_type):
     doxy_comment = f"/**\n"
     doxy_comment += f" * @brief {function_name} function documentation\n"
     for param in params:
-        doxy_comment += f" * @param {param} Description of {param}\n"
-    doxy_comment += f" * @return {return_type} Description of the return value\n"
+        if param != "void":
+            doxy_comment += f" * @param {param} Description of {param}\n"
+    if return_type != "void":
+        doxy_comment += f" * @return {return_type} Description of the return value\n"
     doxy_comment += f" */\n"
     return doxy_comment
 
@@ -41,7 +43,6 @@ def is_doxygen_docs_present(lines, func_line):
             break
     return False
 
-
 def process_c_file(file_path, clean=False):
     with open(file_path, 'r') as file:
         content = file.readlines()
@@ -68,23 +69,22 @@ def generate_doxygen_config():
     config_content = """
 # Doxygen configuration file
 
-PROJECT_NAME           = "AutoDoc Project"
+PROJECT_NAME           = "Auto Documentation"
 OUTPUT_DIRECTORY       = ./doxygen_output
+INPUT                  = ./
+RECURSIVE              = YES
 FILE_PATTERNS          = *.c
 EXTRACT_ALL            = YES
 GENERATE_LATEX         = YES
 LATEX_OUTPUT           = latex
+PDF_HYPERLINKS         = YES
+USE_PDFLATEX           = YES
+LATEX_BATCHMODE        = YES
 GENERATE_HTML          = NO
+
     """
-    
     with open("Doxyfile", 'w') as config_file:
         config_file.write(config_content)
-
-def run_doxygen():
-    """Runs Doxygen to generate the documentation PDF."""
-    subprocess.run(['doxygen', 'Doxyfile'])
-    with open('/dev/null', 'w') as devnull:
-        subprocess.run(['make', '-C', 'doxygen_output/latex'], stdout=devnull, stderr=devnull)
 
 def clean_up():
     if os.path.exists("Doxyfile"):
@@ -94,6 +94,13 @@ def clean_up():
     if os.path.exists("doxygen_output"):
         shutil.rmtree("doxygen_output")
         print("Removed doxygen_output directory")
+
+def run_doxygen():
+    with open('/dev/null', 'w') as devnull:
+        subprocess.run(['doxygen', 'Doxyfile'], stdout=devnull)
+        subprocess.run(['make', '-C', 'doxygen_output/latex'], stdout=devnull)
+        subprocess.run(['mv', 'doxygen_output/latex/refman.pdf', './autodoc.pdf'], stdout=devnull)
+    clean_up()
 
 def show_help():
     help_text = """
@@ -137,6 +144,9 @@ def main():
             with open(file_path, 'w') as file:
                 file.writelines(updated_content)
         clean_up()
+        if os.path.exists("autodoc.pdf"):
+            os.remove("autodoc.pdf")
+            print("Removed autodoc.pdf")
         print("Cleanup completed!")
         return
 

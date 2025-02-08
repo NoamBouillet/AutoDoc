@@ -3,7 +3,7 @@ A documentation builder for C projects
 
 ## Requirements
 You need pdflatex packages installed. The exact packages' names change for each distribution.
-python3 and doxygen packages are going to be installed if you don't have them already.
+python3, doxygen and graphviz packages are going to be installed if you don't have them already.
 
 ## Install
 ```sh
