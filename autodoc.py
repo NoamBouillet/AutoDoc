@@ -38,53 +38,50 @@ GENERATE_HTML          = NO"""
         config_file.write(config_content)
 
 def add_doxygen_docs_to_function(function_name, params, return_type):
-    doxy_comment = f"/**\n"
+    doxy_comment = f"\n/**\n"
     doxy_comment += f" * @brief {function_name} function documentation\n"
     for param in params:
         if param != "void":
             doxy_comment += f" * @param {param} Description of {param}\n"
     if return_type != "void":
         doxy_comment += f" * @return {return_type} Description of the return value\n"
-    doxy_comment += f" */\n"
+    doxy_comment += f" */"
     return doxy_comment
 
-def remove_doxygen_docs_from_function(content, func_line):
-    i = func_line - 1
-    while i >= 0:
-        if re.match(r"\s*/\*\*", content[i]):
-            del content[i:func_line]
-            break
-        i -= 1
+def remove_doxygen_docs_from_function(content, func_start):
+    doxy_pattern = re.compile(r"/\*\*.*?\*/\s*\n?", re.DOTALL)
+    matches = list(doxy_pattern.finditer(content[:func_start]))
+    if matches:
+        last_match = matches[-1]
+        content = content[:last_match.start()] + content[last_match.end():]
+    
     return content
 
-def is_doxygen_docs_present(lines, func_line):
-    i = func_line - 1
-    while i >= 0:
-        if re.match(r"\s*/\*\*", lines[i]):
-            return True
-        i -= 1
-    return False
+def is_doxygen_docs_present(content, func_start):
+    doxy_pattern = re.compile(r"/\*\*.*?\*/\s*\n?", re.DOTALL)
+    matches = list(doxy_pattern.finditer(content[:func_start]))
+    return bool(matches)
 
 def process_c_file(file_path, clean=False):
     with open(file_path, 'r') as file:
-        content = file.readlines()
-    updated_content = []
-    function_pattern = re.compile(r"^\s*([a-zA-Z_][\w\s\*]+)\s+([a-zA-Z_][\w]*)\s*\(([^)]*)\)\s*(\{)?\s*$")
-
-    for i, line in enumerate(content):
-        updated_content.append(line)
-        match = function_pattern.match(line)
-        if match:
-            return_type = match.group(1).strip()
-            function_name = match.group(2).strip()
-            params_str = match.group(3).strip()
-            params = [p.strip().split()[-1] for p in params_str.split(',') if p.strip() and ' ' in p.strip()]
-            if clean:
-                updated_content = remove_doxygen_docs_from_function(updated_content, len(updated_content) - 1)
-            elif not is_doxygen_docs_present(updated_content, len(updated_content) - 1):
-                doxy_comment = add_doxygen_docs_to_function(function_name, params, return_type)
-                updated_content.insert(len(updated_content) - 1, doxy_comment)
-    return updated_content
+        content = file.read()
+    function_pattern = re.compile(
+        r"^\s*(static\s+)?([a-zA-Z_][\w\s\*]+)\s+([a-zA-Z_][\w]*)\s*\(([^)]*)\)\s*(\{)?",
+        re.MULTILINE
+    )
+    matches = list(re.finditer(function_pattern, content))
+    for match in reversed(matches):
+        is_static = bool(match.group(1))
+        return_type = match.group(2).strip()
+        function_name = match.group(3).strip()
+        params_str = match.group(4).strip()        
+        params = [p.strip().split()[-1] for p in params_str.split(',') if p.strip() and ' ' in p.strip()]
+        if clean:
+            content = remove_doxygen_docs_from_function(content, match.start())  
+        elif not is_doxygen_docs_present(content, match.start()):
+            doxy_comment = add_doxygen_docs_to_function(function_name, params, return_type)
+            content = content[:match.start()] + doxy_comment + content[match.start():]
+    return content
 
 def clean_up():
     if os.path.exists("Doxyfile"):
