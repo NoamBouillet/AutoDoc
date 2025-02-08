@@ -9,6 +9,10 @@ python3, doxygen and graphviz packages are going to be installed if you don't ha
 ```sh
 curl -sLO https://raw.githubusercontent.com/NoamBouillet/AutoDoc/main/install.sh && bash install.sh
 ```
+## Uninstall
+```sh
+sudo rm -rf /usr/local/bin/autodoc
+```
 ## Usage
 To build the autodoc file, you can run
 ```sh
@@ -22,12 +26,6 @@ To clean documentation if you don't want it anymore, you can run
 ```sh
 autodoc clean
 ```  
-## Uninstall
-
-```sh
-sudo rm -rf /usr/local/bin/autodoc
-```
-
 ## Doxygen
 If you want to learn about the doxygen documentation, go on the [doxygen website](https://www.doxygen.nl/manual/docblocks.html).
 
