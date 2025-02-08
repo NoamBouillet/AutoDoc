@@ -1,46 +1,62 @@
 #!/bin/bash
 
-set -e 
+set -e
 
-check_dependencies() {
-    missing=""
+fail()
+{
+    echo -e "\e[31mError:\e[0m $1" >&2
+    exit 1
+}
+
+check_dependencies()
+{
+    missing=()
     
-    if ! command -v python3 >/dev/null 2>&1; then
-        missing="$missing python3"
-    fi
-
-    if ! command -v doxygen >/dev/null 2>&1; then
-        missing="$missing doxygen"
-    fi
-
-    if [ -n "$missing" ]; then
-        echo "The following dependencies are missing:$missing"
-        
-        if command -v apt-get >/dev/null 2>&1; then
-            echo "Attempting to install via apt-get..."
-            sudo apt-get update
-            sudo apt-get install -y $missing
-        elif command -v dnf >/dev/null 2>&1; then
-            echo "Attempting to install via dnf..."
-            sudo dnf install -y $missing
-        elif command -v pacman >/dev/null 2>&1; then
-            echo "Attempting to install via pacman..."
-            sudo pacman -Syu --noconfirm $missing
-        else
-            echo "No supported package manager found. Please install dependencies manually."
-            exit 1
-        fi
-    else
+    for cmd in python3 doxygen; do
+        command -v "$cmd" >/dev/null 2>&1 || missing+=("$cmd")
+    done
+    if [ ${#missing[@]} -eq 0 ]; then
         echo "All dependencies are installed."
+        return
+    fi
+    echo "The following dependencies are missing: ${missing[*]}"
+    for pkg_mgr in "apt-get update && apt-get install -y" "dnf install -y" "pacman -Syu --noconfirm"; do
+        if command -v ${pkg_mgr%% *} >/dev/null 2>&1; then
+            echo "Attempting to install via ${pkg_mgr%% *}..."
+            sudo bash -c "$pkg_mgr ${missing[*]}"
+            return
+        fi
+    done
+    echo "No supported package manager found. Please install dependencies manually."
+    exit 1
+}
+
+get_su()
+{
+    if [ "$EUID" -ne 0 ]; then
+        sudo bash "$0" "$@"
+        exit
     fi
 }
 
-check_dependencies
+install_autodoc()
+{
+    INSTALL_DIR="/usr/local/bin"
+    TMP_FILE=$(mktemp)
 
-INSTALL_DIR="/usr/local/bin"
+    echo "Downloading autodoc.py..."
+    curl -sL -o "$TMP_FILE" https://raw.githubusercontent.com/NoamBouillet/AutoDoc/main/autodoc.py || fail "Failed to download autodoc.py"
+    mv "$TMP_FILE" "$INSTALL_DIR/autodoc"
+    chmod 755 "$INSTALL_DIR/autodoc"
+    echo "Installed autodoc to $INSTALL_DIR/autodoc"
+}
 
-mkdir -p "$INSTALL_DIR"
-echo "Downloading autodoc.py..."
-curl -sL https://raw.githubusercontent.com/NoamBouillet/AutoDoc/main/autodoc.py -o "$INSTALL_DIR/autodoc.py"
-chmod +x "$INSTALL_DIR/autodoc"
-echo "Installed autodoc to $INSTALL_DIR/autodoc"
+main()
+{
+    get_su "$@"
+    check_dependencies
+    install_autodoc
+}
+
+main "$@"
+

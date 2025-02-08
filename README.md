@@ -6,13 +6,18 @@ python3 and doxygen packages are going to be installed if you don't have them al
 
 ## Install
 ```sh
-curl -sLO https://raw.githubusercontent.com/NoamBouillet/AutoDoc/main/installing.sh && sudo bash installing.sh
+curl -sLO https://raw.githubusercontent.com/NoamBouillet/AutoDoc/main/installing.sh && bash installing.sh
 ```
 Installs the autodoc command by copying autodoc.py to an executable location.
 Then, you can safely run
 ```sh
 autodoc
 ```
+to clean documentation you don't want, you can use
+```sh
+autodoc clean
+```
+Don't forget to add Doxygen files into your .gitignore, nobody wants to see that in your repository
 
 ## Uninstall
 
