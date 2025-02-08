@@ -9,20 +9,18 @@ python3, doxygen and graphviz packages are going to be installed if you don't ha
 ```sh
 curl -sLO https://raw.githubusercontent.com/NoamBouillet/AutoDoc/main/install.sh && bash install.sh
 ```
-Then, you can safely run to add basic documentation
+To build the pdf file, you can run
 ```sh
 autodoc
 ```
-To build the pdf file, you can use
+To add documentation for every function, you can run
 ```sh
-autodoc gen
+autodoc details
 ```
-To clean documentation if you don't want it anymore, you can use
+To clean documentation if you don't want it anymore, you can run
 ```sh
 autodoc clean
-```
-Don't forget to add the other Doxygen files into your .gitignore, nobody wants to see that in your repository.
-
+```  
 ## Uninstall
 
 ```sh

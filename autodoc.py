@@ -9,8 +9,9 @@ import sys
 def show_help():
     help_text = """
 Usage:
-  autodoc          - Process C files, add Doxygen documentation, and generate the PDF.
+  autodoc details        - Process C files, add Doxygen documentation.
   autodoc clean      - Remove all added Doxygen documentation from the C files.
+  autodoc gen      - , Generate the PDF for documentation.
   autodoc help       - Show this help guide.
 
 This script recursively processes all C files in the current directory:
@@ -114,6 +115,7 @@ def run_doxygen():
         subprocess.run(['doxygen', 'Doxyfile'], stdout=devnull, stderr=devnull)
         subprocess.run(['make', '-C', 'doxygen_output/latex'], stdout=devnull, stderr=devnull)
         subprocess.run(['mv', 'doxygen_output/latex/refman.pdf', './autodoc.pdf'], stdout=devnull, stderr=devnull)
+    print("Autodoc PDF generated!")
 
 def get_local_files():
     c_files = []
@@ -137,24 +139,23 @@ def clean_doc():
     print("Cleanup completed!")
 
 def main():
-    if len(sys.argv) > 2:
+    if len(sys.argv) == 1:
+        generate_doxygen_config()
+        run_doxygen()
+        clean_up()
+        return
+    if len(sys.argv) != 2:
         print("Unknown argument. Use 'help' for usage.")
         return
-    if len(sys.argv) > 1:
-        if sys.argv[1] == "clean":
-            clean_doc()
-            return
-        elif sys.argv[1] == "gen":
-            generate_doxygen_config()
-            run_doxygen()
-            clean_up()
-            return
-        elif sys.argv[1] == "help":
-            show_help()
-            return
-        else:
-            print("Unknown argument. Use 'help' for usage.")
-            return
+    if sys.argv[1] == "clean":
+        clean_doc()
+        return
+    elif sys.argv[1] == "help":
+        show_help()
+        return
+    elif sys.argv[1] != "details":
+        print("Unknown argument. Use 'help' for usage.")
+        return
     clean_doc()
     c_files = get_local_files()
     for file_path in c_files:
@@ -162,7 +163,6 @@ def main():
         updated_content = process_c_file(file_path, clean=False)
         with open(file_path, 'w') as file:
             file.writelines(updated_content)
-    print("Autodoc PDF generated!")
 
 if __name__ == "__main__":
     main()
