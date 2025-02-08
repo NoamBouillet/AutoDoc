@@ -81,6 +81,7 @@ main()
     get_su "$@"
     check_dependencies
     install_autodoc
+    rm -- "$0"
 }
 
 main "$@"
