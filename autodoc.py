@@ -6,6 +6,42 @@ import subprocess
 import shutil
 import sys
 
+def show_help():
+    help_text = """
+Usage:
+  autodoc          - Process C files, add Doxygen documentation, and generate the PDF.
+  autodoc clean      - Remove all added Doxygen documentation from the C files.
+  autodoc help       - Show this help guide.
+
+This script recursively processes all C files in the current directory:
+- It adds Doxygen comments to functions that do not already have them.
+- It generates a Doxygen configuration and runs Doxygen to generate a PDF.
+
+If 'clean' is specified, it removes all added Doxygen documentation from the C files.
+"""
+    print(help_text)
+
+def generate_doxygen_config():
+    print("Creating the Doxyfile config")
+    config_content = """
+# Doxygen configuration file
+
+PROJECT_NAME           = "Auto Documentation"
+OUTPUT_DIRECTORY       = ./doxygen_output
+INPUT                  = ./
+RECURSIVE              = YES
+FILE_PATTERNS          = *.c
+EXTRACT_ALL            = YES
+GENERATE_LATEX         = YES
+LATEX_OUTPUT           = latex
+PDF_HYPERLINKS         = YES
+USE_PDFLATEX           = YES
+LATEX_BATCHMODE        = YES
+GENERATE_HTML          = NO
+    """
+    with open("Doxyfile", 'w') as config_file:
+        config_file.write(config_content)
+
 def add_doxygen_docs_to_function(function_name, params, return_type):
     doxy_comment = f"/**\n"
     doxy_comment += f" * @brief {function_name} function documentation\n"
@@ -16,7 +52,6 @@ def add_doxygen_docs_to_function(function_name, params, return_type):
         doxy_comment += f" * @return {return_type} Description of the return value\n"
     doxy_comment += f" */\n"
     return doxy_comment
-
 
 def remove_doxygen_docs_from_function(content, func_line):
     for i in range(func_line, -1, -1):
@@ -64,28 +99,6 @@ def process_c_file(file_path, clean=False):
                 updated_content.insert(updated_content.index(line), doxy_comment)
     return updated_content
 
-
-def generate_doxygen_config():
-    config_content = """
-# Doxygen configuration file
-
-PROJECT_NAME           = "Auto Documentation"
-OUTPUT_DIRECTORY       = ./doxygen_output
-INPUT                  = ./
-RECURSIVE              = YES
-FILE_PATTERNS          = *.c
-EXTRACT_ALL            = YES
-GENERATE_LATEX         = YES
-LATEX_OUTPUT           = latex
-PDF_HYPERLINKS         = YES
-USE_PDFLATEX           = YES
-LATEX_BATCHMODE        = YES
-GENERATE_HTML          = NO
-
-    """
-    with open("Doxyfile", 'w') as config_file:
-        config_file.write(config_content)
-
 def clean_up():
     if os.path.exists("Doxyfile"):
         os.remove("Doxyfile")
@@ -96,75 +109,60 @@ def clean_up():
         print("Removed doxygen_output directory")
 
 def run_doxygen():
+    print("Building the autodoc pdf")
     with open('/dev/null', 'w') as devnull:
-        subprocess.run(['doxygen', 'Doxyfile'], stdout=devnull)
-        subprocess.run(['make', '-C', 'doxygen_output/latex'], stdout=devnull)
-        subprocess.run(['mv', 'doxygen_output/latex/refman.pdf', './autodoc.pdf'], stdout=devnull)
-    clean_up()
+        subprocess.run(['doxygen', 'Doxyfile'], stdout=devnull, stderr=devnull)
+        subprocess.run(['make', '-C', 'doxygen_output/latex'], stdout=devnull, stderr=devnull)
+        subprocess.run(['mv', 'doxygen_output/latex/refman.pdf', './autodoc.pdf'], stdout=devnull, stderr=devnull)
 
-def show_help():
-    help_text = """
-Usage:
-  autodoc          - Process C files, add Doxygen documentation, and generate the PDF.
-  autodoc clean      - Remove all added Doxygen documentation from the C files.
-  autodoc help       - Show this help guide.
-
-This script recursively processes all C files in the current directory:
-- It adds Doxygen comments to functions that do not already have them.
-- It generates a Doxygen configuration and runs Doxygen to generate a PDF.
-
-If 'clean' is specified, it removes all added Doxygen documentation from the C files.
-"""
-    print(help_text)
-
-
-def main():
-    if len(sys.argv) > 1:
-        if sys.argv[1] == "clean":
-            clean = True
-        elif sys.argv[1] == "help":
-            show_help()
-            return
-        elif len(sys.argv) > 2:
-            print("Unknown argument. Use 'help' for usage.")
-            return
-    else:
-        clean = False
-
-    if clean:
-        c_files = []
-        for root, dirs, files in os.walk('.'):
-            for file in files:
-                if file.endswith('.c'):
-                    c_files.append(os.path.join(root, file))
-        
-        for file_path in c_files:
-            print(f"Cleaning up file: {file_path}")
-            updated_content = process_c_file(file_path, clean=True)
-            with open(file_path, 'w') as file:
-                file.writelines(updated_content)
-        clean_up()
-        if os.path.exists("autodoc.pdf"):
-            os.remove("autodoc.pdf")
-            print("Removed autodoc.pdf")
-        print("Cleanup completed!")
-        return
-
+def get_local_files():
     c_files = []
     for root, dirs, files in os.walk('.'):
         for file in files:
             if file.endswith('.c'):
                 c_files.append(os.path.join(root, file))
-    
+    return c_files
+
+def clean_doc():
+    c_files = get_local_files()
+    for file_path in c_files:
+        print(f"Cleaning up file: {file_path}")
+        updated_content = process_c_file(file_path, clean=True)
+        with open(file_path, 'w') as file:
+            file.writelines(updated_content)
+    clean_up()
+    if os.path.exists("autodoc.pdf"):
+        os.remove("autodoc.pdf")
+        print("Removed autodoc.pdf")
+    print("Cleanup completed!")
+
+def main():
+    if len(sys.argv) > 2:
+        print("Unknown argument. Use 'help' for usage.")
+        return
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "clean":
+            clean_doc()
+            return
+        elif sys.argv[1] == "gen":
+            generate_doxygen_config()
+            run_doxygen()
+            clean_up()
+            return
+        elif sys.argv[1] == "help":
+            show_help()
+            return
+        else:
+            print("Unknown argument. Use 'help' for usage.")
+            return
+    clean_doc()
+    c_files = get_local_files()
     for file_path in c_files:
         print(f"Processing file: {file_path}")
         updated_content = process_c_file(file_path, clean=False)
         with open(file_path, 'w') as file:
             file.writelines(updated_content)
-    
-    generate_doxygen_config()
-    run_doxygen()
-    print("Doxygen PDF generated!")
+    print("Autodoc PDF generated!")
 
 if __name__ == "__main__":
     main()
