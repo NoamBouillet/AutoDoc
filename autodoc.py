@@ -6,16 +6,20 @@ import subprocess
 import shutil
 import sys
 
+GREEN="\033[1;32m"
+BLUE="\033[1;34m"
+RESET="\033[0m"
+
 def show_help():
-    help_text = """usage:
-autodoc            - Generates a Doxygen configuration and runs Doxygen to generate a PDF.
-autodoc details    - Process C files, add Doxygen documentation to functions that do not already have them.
-autodoc clean      - Remove all added Doxygen documentation from the C files and the autodoc.pdf.
-autodoc help       - Show this help guide."""
+    help_text = f"""usage:
+    autodoc            - Generates a Doxygen configuration and runs Doxygen to generate a PDF.
+    autodoc details    - Process C files, add Doxygen documentation to functions that do not already have them.
+    autodoc clean      - Remove all added Doxygen documentation from the C files and the autodoc.pdf.
+    autodoc help       - Show this help guide."""
     print(help_text)
 
 def generate_doxygen_config():
-    print("Creating the Doxyfile config")
+    print(f"{BLUE}Creating the Doxyfile config{RESET}")
     config_content = """# Doxygen configuration file
 
 PROJECT_NAME           = "Auto Documentation"
@@ -93,19 +97,19 @@ def process_c_file(file_path, clean=False):
 def clean_up():
     if os.path.exists("Doxyfile"):
         os.remove("Doxyfile")
-        print("Removed Doxyfile")
+        print(f"{GREEN}✔ Removed Doxyfile{RESET}")
 
     if os.path.exists("doxygen_output"):
         shutil.rmtree("doxygen_output")
-        print("Removed doxygen_output directory")
+        print(f"{GREEN}✔ Removed doxygen_output directory{RESET}")
 
 def run_doxygen():
-    print("Building the autodoc pdf")
+    print(f"{BLUE}Building the autodoc PDF...{RESET}")
     with open('/dev/null', 'w') as devnull:
         subprocess.run(['doxygen', 'Doxyfile'], stdout=devnull, stderr=devnull)
         subprocess.run(['make', '-C', 'doxygen_output/latex'], stdout=devnull, stderr=devnull)
         subprocess.run(['mv', 'doxygen_output/latex/refman.pdf', './autodoc.pdf'], stdout=devnull, stderr=devnull)
-    print("Autodoc PDF generated!")
+    print(f"{GREEN}✔ Autodoc PDF generated!{RESET}")
 
 def get_local_files():
     c_files = []
@@ -117,20 +121,20 @@ def get_local_files():
 
 def clean_doc(c_files):
     for file_path in c_files:
-        print(f"Cleaning up file: {file_path}")
+        print(f"{BLUE}Cleaning up file: {file_path}{RESET}")
         updated_content = process_c_file(file_path, clean=True)
         with open(file_path, 'w') as file:
             file.writelines(updated_content)
     clean_up()
     if os.path.exists("autodoc.pdf"):
         os.remove("autodoc.pdf")
-        print("Removed autodoc.pdf")
-    print("Cleanup completed!")
+        print(f"{GREEN}✔ Removed autodoc.pdf{RESET}")
+    print(f"{GREEN}✔ Cleanup completed!{RESET}")
 
 def add_details(c_files):
-    clean_doc()
+    clean_doc(c_files)
     for file_path in c_files:
-        print(f"Processing file: {file_path}")
+        print(f"{BLUE}Processing file: {file_path}{RESET}")
         updated_content = process_c_file(file_path, clean=False)
         with open(file_path, 'w') as file:
             file.writelines(updated_content)
