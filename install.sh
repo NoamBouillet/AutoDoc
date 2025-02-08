@@ -38,12 +38,10 @@ check_dependencies()
             missing+=("$cmd")
         fi
     done
-
     if [ ${#missing[@]} -eq 0 ]; then
         echo -e "${GREEN}✔ All dependencies are installed.${RESET}"
         return
     fi
-
     echo -e "${YELLOW}The following dependencies are missing:${RESET} ${missing[*]}"
     for pkg_mgr in "apt-get update && apt-get install -y" "dnf install -y" "pacman -Syu --noconfirm"; do
         if command -v ${pkg_mgr%% *} >/dev/null; then
@@ -73,10 +71,8 @@ install_autodoc()
 
     echo -e "${BLUE}⬇ Downloading autodoc.py...${RESET}"
     curl -sL -o "$TMP_FILE" https://raw.githubusercontent.com/NoamBouillet/AutoDoc/main/autodoc.py || fail "Failed to download autodoc.py"
-
     mv "$TMP_FILE" "$INSTALL_DIR/autodoc"
     chmod 755 "$INSTALL_DIR/autodoc"
-
     echo -e "${GREEN}✔ Installed autodoc to $INSTALL_DIR/autodoc${RESET}"
 }
 

@@ -49,49 +49,41 @@ def add_doxygen_docs_to_function(function_name, params, return_type):
     return doxy_comment
 
 def remove_doxygen_docs_from_function(content, func_line):
-    for i in range(func_line, -1, -1):
-        if content[i].strip().startswith("/*"):
-            del content[i]
-        elif content[i].strip().startswith("*/"):
+    i = func_line - 1
+    while i >= 0:
+        if re.match(r"\s*/\*\*", content[i]):
+            del content[i:func_line]
             break
+        i -= 1
     return content
 
 def is_doxygen_docs_present(lines, func_line):
-    line = lines[func_line].strip()
-    if not line:
-        return False
-    split_line = line.split()
-    if len(split_line) < 2:
-        return False
-    function_name = split_line[1]
-    function_name_pattern = re.compile(r"\b" + re.escape(function_name) + r"\b")
-
-    for i in range(func_line, -1, -1):
-        if lines[i].strip().startswith("/*"):
+    i = func_line - 1
+    while i >= 0:
+        if re.match(r"\s*/\*\*", lines[i]):
             return True
-        elif lines[i].strip().startswith("*/"):
-            break
+        i -= 1
     return False
 
 def process_c_file(file_path, clean=False):
     with open(file_path, 'r') as file:
         content = file.readlines()
     updated_content = []
-    function_pattern = re.compile(r"^\s*([a-zA-Z_][\w\s\*]+)\s+([a-zA-Z_]\w*)\s*\(([^)]*)\)\s*$")
+    function_pattern = re.compile(r"^\s*([a-zA-Z_][\w\s\*]+)\s+([a-zA-Z_][\w]*)\s*\(([^)]*)\)\s*(\{)?\s*$")
 
     for i, line in enumerate(content):
         updated_content.append(line)
-        match = function_pattern.search(line)
+        match = function_pattern.match(line)
         if match:
-            return_type = match.group(1)
-            function_name = match.group(2)
-            params_str = match.group(3)
-            params = [p.strip().split()[-1] for p in params_str.split(',') if p.strip() and ' ' in p.strip()]            
+            return_type = match.group(1).strip()
+            function_name = match.group(2).strip()
+            params_str = match.group(3).strip()
+            params = [p.strip().split()[-1] for p in params_str.split(',') if p.strip() and ' ' in p.strip()]
             if clean:
-                updated_content = remove_doxygen_docs_from_function(updated_content, i)
-            elif not is_doxygen_docs_present(updated_content, i):
+                updated_content = remove_doxygen_docs_from_function(updated_content, len(updated_content) - 1)
+            elif not is_doxygen_docs_present(updated_content, len(updated_content) - 1):
                 doxy_comment = add_doxygen_docs_to_function(function_name, params, return_type)
-                updated_content.insert(updated_content.index(line), doxy_comment)
+                updated_content.insert(len(updated_content) - 1, doxy_comment)
     return updated_content
 
 def clean_up():
@@ -132,7 +124,6 @@ def clean_doc(c_files):
     print(f"{GREEN}✔ Cleanup completed!{RESET}")
 
 def add_details(c_files):
-    clean_doc(c_files)
     for file_path in c_files:
         print(f"{BLUE}Processing file: {file_path}{RESET}")
         updated_content = process_c_file(file_path, clean=False)
