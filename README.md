@@ -9,7 +9,7 @@ python3, doxygen and graphviz packages are going to be installed if you don't ha
 ```sh
 curl -sLO https://raw.githubusercontent.com/NoamBouillet/AutoDoc/main/install.sh && bash install.sh
 ```
-To build the pdf file, you can run
+To build the autodoc file, you can run
 ```sh
 autodoc
 ```
