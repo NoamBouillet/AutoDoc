@@ -95,9 +95,9 @@ def clean_up():
 def run_doxygen():
     print(f"{BLUE}Building the autodoc PDF...{RESET}")
     with open('/dev/null', 'w') as devnull:
-        subprocess.run(['doxygen', 'Doxyfile'], stdout=devnull, stderr=devnull)
-        subprocess.run(['make', '-C', 'doxygen_output/latex'], stdout=devnull, stderr=devnull)
-        subprocess.run(['mv', 'doxygen_output/latex/refman.pdf', './autodoc.pdf'], stdout=devnull, stderr=devnull)
+        subprocess.run(['doxygen', 'Doxyfile'], stdout=devnull)
+        subprocess.run(['make', '-C', 'doxygen_output/latex'], stdout=devnull)
+        subprocess.run(['mv', 'doxygen_output/latex/refman.pdf', './autodoc.pdf'], stdout=devnull)
     print(f"{GREEN}✔ Autodoc PDF generated!{RESET}")
 
 def get_local_files():
