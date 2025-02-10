@@ -74,11 +74,11 @@ def process_c_file(file_path, clean=False):
         is_static = bool(match.group(1))
         return_type = match.group(2).strip()
         function_name = match.group(3).strip()
-        params_str = match.group(4).strip()        
+        params_str = match.group(4).strip()     
         params = [p.strip().split()[-1] for p in params_str.split(',') if p.strip() and ' ' in p.strip()]
         if clean:
             content = remove_doxygen_docs_from_function(content, match.start())  
-        elif not is_doxygen_docs_present(content, match.start()):
+        elif not is_doxygen_docs_present(content, match.start()) and return_type != "return":
             doxy_comment = add_doxygen_docs_to_function(function_name, params, return_type)
             content = content[:match.start()] + doxy_comment + content[match.start():]
     return content
@@ -158,7 +158,6 @@ def main():
     handle_options(c_files)
     generate_doxygen_config()
     run_doxygen()
-    return clean_up()
 
 if __name__ == "__main__":
     main()
